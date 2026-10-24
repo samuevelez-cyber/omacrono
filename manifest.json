@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "s.omacrono",
+  "name": "Omacrono",
+  "version": "1.0.0",
+  "author": "Sam Velez",
+  "license": "MIT",
+  "description": "A labeled stopwatch for the Omarchy bar: time what you work on, with type-ahead labels.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Omacrono",
+    "description": "A stopwatch that shows the running time in the bar, with labels, start, pause, and reset controls.",
+    "category": "Time",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
