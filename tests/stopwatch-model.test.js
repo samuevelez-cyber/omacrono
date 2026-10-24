@@ -48,7 +48,9 @@ assert.equal(model.sanitizeState({ version: 99, status: "running" }, 0).status, 
 state = model.reset(model.setLabel(model.start(model.stoppedState(0), 0), "Client A", 300000), 310000)
 assert.equal(state.status, model.StatusStopped)
 assert.equal(model.elapsedSeconds(state, 400000), 0)
-assert.equal(state.label, "Client A", "reset keeps the label for the next run")
+assert.equal(state.label, "", "reset clears the label")
+assert.equal(model.sanitizeState({ version: 2, status: "stopped", label: "Old" }, 0).label, "",
+  "a stopwatch at zero loads with no label")
 
 // ---- Labels and segments.
 assert.equal(model.normalizeLabel("  Client   A  "), "Client A")

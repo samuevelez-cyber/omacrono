@@ -77,9 +77,9 @@ function pause(state, nowMs) {
   return next
 }
 
-// Back to zero; the label stays so the next run keeps tracking the same task.
+// Back to zero with no label: the next run starts fresh.
 function reset(state, nowMs) {
-  return stoppedState(nowMs, state ? state.label : "")
+  return stoppedState(nowMs)
 }
 
 // While running, a new label starts a fresh segment without touching the counter.
@@ -191,7 +191,8 @@ function sanitizeState(raw, nowMs) {
   var version = raw ? Number(raw.version) : 0
   if (!raw || (version !== 1 && version !== StateVersion) || !isStatus(raw.status))
     return stoppedState(now)
-  if (raw.status === StatusStopped) return stoppedState(now, raw.label)
+  // A stopwatch at zero has no label, even in files saved by older versions.
+  if (raw.status === StatusStopped) return stoppedState(now)
 
   var startedAt = Math.max(0, finiteNumber(raw.startedAtMs, 0))
   // A start time in the future means the clock jumped; treat it as starting now.

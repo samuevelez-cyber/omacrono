@@ -46,7 +46,7 @@ empty and lists every label you've used, newest first; typing filters it
 - **At zero, choosing a label starts the stopwatch**, counting from the moment
   the label box opened. The panel and the bar count along while you type.
 
-Reset sets the counter to zero but keeps the label. A running stopwatch keeps
+Reset sets the counter back to zero and clears the label. A running stopwatch keeps
 counting across bar reloads and logouts.
 
 ### Keyboard controls

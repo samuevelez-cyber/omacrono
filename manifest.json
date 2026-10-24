@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "s.omacrono",
   "name": "Omacrono",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Sam Velez",
   "license": "MIT",
   "description": "A labeled stopwatch for the Omarchy bar: time what you work on, with type-ahead labels.",
