@@ -80,11 +80,15 @@ omarchy-shell s.omacrono status
 
 ## Data
 
-- `~/.local/state/omarchy/omacrono.json`: the current stopwatch and label.
-- `~/.local/state/omarchy/omacrono-history.json`: each finished stretch of
-  labeled time, kept for 90 days. The panel only uses it for label suggestions.
+Omacrono keeps its files in a private folder, `~/.local/state/omarchy/omacrono/`,
+that only your account can open (labels may name clients):
 
-Nothing leaves your computer.
+- `state.json`: the current stopwatch and label.
+- `history.json`: each finished stretch of labeled time, kept for 90 days. The
+  panel only uses it for label suggestions.
+
+Nothing leaves your computer. Files from version 1.1 and earlier are moved there
+automatically.
 
 ## Update
 
@@ -101,7 +105,7 @@ omarchy plugin remove s.omacrono
 To also delete its saved data:
 
 ```bash
-rm ~/.local/state/omarchy/omacrono.json ~/.local/state/omarchy/omacrono-history.json
+rm -r ~/.local/state/omarchy/omacrono
 ```
 
 ## Development

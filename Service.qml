@@ -11,9 +11,13 @@ Item {
 
   readonly property string stateHome: Quickshell.env("XDG_STATE_HOME")
     || ((Quickshell.env("HOME") || "") + "/.local/state")
-  readonly property string stateDir: stateHome + "/omarchy"
-  readonly property string statePath: stateDir + "/omacrono.json"
-  readonly property string historyPath: stateDir + "/omacrono-history.json"
+  // Labels can name clients, so the files live in a folder only the owner can
+  // read. Files from 1.x sat directly in ~/.local/state/omarchy and are moved.
+  readonly property string stateDir: stateHome + "/omarchy/omacrono"
+  readonly property string statePath: stateDir + "/state.json"
+  readonly property string historyPath: stateDir + "/history.json"
+  readonly property string legacyStatePath: stateHome + "/omarchy/omacrono.json"
+  readonly property string legacyHistoryPath: stateHome + "/omarchy/omacrono-history.json"
 
   property var watchState: StopwatchModel.stoppedState(Date.now())
   property var history: StopwatchModel.emptyHistory()
@@ -21,6 +25,7 @@ Item {
   property bool stateFileLoaded: false
   property bool historyFileLoaded: false
   property bool initialized: false
+  property bool stateDirChecked: false
   property bool stateDirReady: false
   property bool savePending: false
   property bool historySavePending: false
@@ -133,6 +138,15 @@ Item {
     }
   }
 
+  // Creates the private folder (mode 700), moves files from older versions
+  // into it, and makes sure the files themselves are owner-only (mode 600).
+  readonly property string privateStateScript: 'umask 077
+mkdir -p "$1" && chmod 700 "$1" || exit 1
+if [ -e "$2" ] && [ ! -e "$3" ]; then mv "$2" "$3"; fi
+if [ -e "$4" ] && [ ! -e "$5" ]; then mv "$4" "$5"; fi
+for f in "$3" "$5"; do if [ -e "$f" ]; then chmod 600 "$f"; fi; done
+exit 0'
+
   Component.onCompleted: stateDirProcess.running = true
 
   // Commands for keybindings and scripts:
@@ -163,29 +177,36 @@ Item {
 
   Process {
     id: stateDirProcess
-    command: ["mkdir", "-p", root.stateDir]
+    command: ["sh", "-c", root.privateStateScript, "sh", root.stateDir,
+      root.legacyStatePath, root.statePath, root.legacyHistoryPath, root.historyPath]
     onExited: function(exitCode) {
       root.stateDirReady = exitCode === 0
+      // The files load either way; without the folder nothing is saved.
+      root.stateDirChecked = true
       if (!root.stateDirReady) {
-        console.warn("Omacrono: could not create the state directory")
+        console.warn("Omacrono: could not create the private state directory")
         return
       }
       root.flushState()
     }
   }
 
+  // Each view reports nothing until the private folder is ready and its real
+  // path is set, so an early empty read can't overwrite saved data.
   FileView {
     id: stateFile
-    path: root.statePath
+    path: root.stateDirChecked ? root.statePath : ""
     watchChanges: false
     atomicWrites: true
     printErrors: false
     onLoaded: {
+      if (!root.stateDirChecked) return
       root.loadedStateText = text()
       root.stateFileLoaded = true
       root.initializeIfReady()
     }
     onLoadFailed: {
+      if (!root.stateDirChecked) return
       root.loadedStateText = ""
       root.stateFileLoaded = true
       root.initializeIfReady()
@@ -194,16 +215,18 @@ Item {
 
   FileView {
     id: historyFile
-    path: root.historyPath
+    path: root.stateDirChecked ? root.historyPath : ""
     watchChanges: false
     atomicWrites: true
     printErrors: false
     onLoaded: {
+      if (!root.stateDirChecked) return
       root.loadedHistoryText = text()
       root.historyFileLoaded = true
       root.initializeIfReady()
     }
     onLoadFailed: {
+      if (!root.stateDirChecked) return
       root.loadedHistoryText = ""
       root.historyFileLoaded = true
       root.initializeIfReady()
